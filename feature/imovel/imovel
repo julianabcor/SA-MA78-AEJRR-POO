@@ -1,0 +1,53 @@
+class TipoImovelRepositorio(RepositorioBase):
+    tabela = "TipoImovel"
+    classe_entidade = TipoImovel
+    pk = "id_tipo_imovel"
+    colunas_inserir = ["descricao"]
+    nome_exibicao = "Tipo de imóvel"
+    msg_erro_deletar = "existem Imóveis cadastrados com este tipo."
+class DocumentoRepositorio(RepositorioBase):
+    tabela = "Documento"
+    classe_entidade = Documento
+    pk = "id_documento"
+    colunas_inserir = ["nome_documento", "tipo"]
+    nome_exibicao = "Documento"
+    campo_nome = "nome_documento"
+    msg_erro_deletar = "ele está arquivado e vinculado a um Imóvel."
+class ImovelRepositorio(RepositorioBase):
+    tabela = "Imovel"
+    classe_entidade = Imovel
+    pk = "id_imovel"
+    # status_imovel e data_cadastro têm valor padrão no banco: não pedimos
+    # isso no cadastro, só permitimos editar depois (ex.: marcar Vendido)
+    colunas_inserir = ["id_proprietario", "id_tipo_imovel", "id_endereco", "valor_sugerido"]
+    colunas_atualizar = ["id_proprietario", "id_tipo_imovel", "id_endereco", "valor_sugerido", "status_imovel"]
+    nome_exibicao = "Imóvel"
+    msg_erro_atualizar = "verifique se o ID do proprietário, tipo do imóvel e endereço existem."
+    msg_erro_deletar = "ele está associado a Visitas, Anúncios, Documentos, Vendas ou Aluguéis."
+
+    def listar_detalhado(self):
+        """Listagem com nomes legíveis (proprietário, tipo, endereço) em vez de IDs cruas."""
+        sql = """
+        SELECT
+            i.id_imovel, p.nome AS proprietario, t.descricao AS tipo_imovel,
+            e.rua, e.numero, i.valor_sugerido, i.status_imovel, i.data_cadastro
+        FROM Imovel i
+        JOIN Proprietario p ON i.id_proprietario = p.id_proprietario
+        JOIN TipoImovel t ON i.id_tipo_imovel = t.id_tipo_imovel
+        JOIN Endereco e ON i.id_endereco = e.id_endereco
+        """
+        with Conexao() as db:
+            db.cursor.execute(sql)
+            return db.cursor.fetchall()
+class EnderecoRepositorio(RepositorioBase):
+    tabela = "Endereco"
+    classe_entidade = Endereco
+    pk = "id_endereco"
+    colunas_inserir = ["rua", "numero", "bairro", "cidade", "estado", "cep"]
+    nome_exibicao = "Endereço"
+    msg_erro_deletar = "ele está vinculado a um Imóvel ativo."
+
+    def validar(self, entidade):
+        if len(entidade.estado) > 2:
+            return "O estado deve conter apenas a sigla de 2 letras (Ex: SP, RJ)."
+        return None

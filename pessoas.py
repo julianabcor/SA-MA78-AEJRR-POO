@@ -18,3 +18,14 @@ class ClienteRepositorio(RepositorioBase):
     campo_nome = "nome"
     msg_erro_atualizar = "este CPF já está cadastrado para outro cliente."
     msg_erro_deletar = "ele possui registros de Visitas, Vendas ou Aluguéis vinculados."
+
+
+class CorretorRepositorio(RepositorioBase):
+    tabela = "Corretor"
+    classe_entidade = Corretor
+    pk = "id_corretor"
+    colunas_inserir = ["nome", "creci", "telefone", "email"]
+    nome_exibicao = "Corretor"
+    campo_nome = "nome"
+    msg_erro_atualizar = "este CRECI já está cadastrado para outro corretor."
+    msg_erro_deletar = "ele está associado a Visitas, Vendas ou Aluguéis históricos."
